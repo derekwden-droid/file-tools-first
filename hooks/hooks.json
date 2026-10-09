@@ -1,0 +1,20 @@
+{
+  "description": "Tells Claude at session start to use Read, Edit and Write for files, and blocks Bash or PowerShell commands that only read a file or that write file contents, naming the file tool to use instead.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/tool-router.mjs"], "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/tool-router.mjs"], "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

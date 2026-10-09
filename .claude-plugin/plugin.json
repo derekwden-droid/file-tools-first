@@ -1,0 +1,17 @@
+{
+  "name": "tool-router",
+  "displayName": "Tool Router",
+  "version": "1.0.0",
+  "description": "Keeps Claude Code's file work in its file tools. Blocks Bash and PowerShell commands that edit files in place (sed -i), write text into them (heredocs, echo redirects, Set-Content) or only read them (cat, head, sed -n), and names the Read, Edit or Write call to use instead, so /rewind, CLAUDE.md path rules and edit checks keep working in auto and bypass mode.",
+  "author": {
+    "name": "Derek Denmark",
+    "url": "https://github.com/derekwden-droid"
+  },
+  "homepage": "https://github.com/derekwden-droid/tool-router",
+  "repository": "https://github.com/derekwden-droid/tool-router",
+  "license": "MIT",
+  "keywords": ["bash", "sed", "heredoc", "auto-mode", "rewind", "read", "edit", "hooks"],
+  "documentationUrl": "https://github.com/derekwden-droid/tool-router/blob/main/README.md",
+  "supportUrl": "https://github.com/derekwden-droid/tool-router/issues",
+  "privacyPolicyUrl": "https://github.com/derekwden-droid/tool-router/blob/main/PRIVACY.md"
+}

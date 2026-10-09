@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: node --test
+
+      # Claude Code decodes backslash-u escapes in Write and Edit text, so a stray
+      # character could slip into these files unseen. Keep the code plain ASCII.
+      - name: Check the scripts and tests are plain ASCII
+        shell: bash
+        run: |
+          if LC_ALL=C grep -rnP '[^\x09\x0A\x20-\x7E]' scripts test; then
+            echo "Found characters outside printable ASCII" >&2
+            exit 1
+          fi
