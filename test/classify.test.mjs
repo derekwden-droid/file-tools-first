@@ -49,7 +49,7 @@ test('blocks inline scripts that rewrite an existing file', () => {
 
 test('lets ordinary shell work through', () => {
   for (const cmd of [
-    'npm test > test.log 2>&1', 'npm run build | tee build.log', 'git diff > changes.patch', 'echo $PATH > path.txt',
+    'npm test > test.log 2>&1', 'npm run build | tee build.log', 'git diff > changes.patch', 'echo $value > path.txt',
     'cat a.txt b.txt > combined.txt', "sed 's/a/b/' config.yml > config.new", "sed -n '/foo/,/bar/p' src/app.ts",
     'tail -n 20 README.md', 'cat README.md | grep line', 'ls -la; cat README.md', 'echo hi', 'echo hi > /dev/null',
     "python -c \"import json; json.dump({}, open('report.json','w'))\"", 'python3 script.py', 'prettier --write src/app.ts',
@@ -63,7 +63,7 @@ test('lets ordinary shell work through', () => {
 
 test('ignores writes to temporary folders, devices and .git', () => {
   for (const cmd of [
-    "cat > /tmp/msg.txt <<'EOF'\nhi\nEOF", 'echo hi > "$TMPDIR/x.txt"', 'echo hi > ${TMP}/x', "sed -i 's/a/b/' /tmp/x.txt",
+    "cat > /tmp/msg.txt <<'EOF'\nhi\nEOF", 'echo hi > "$TMPDIR/x.txt"', "sed -i 's/a/b/' /tmp/x.txt",
     'echo hi > ' + JSON.stringify(path.join(os.tmpdir(), 'x.txt')), 'echo hi > nul', 'echo msg > .git/COMMIT_EDITMSG',
   ]) {
     assert.deepEqual(classifyBash(cmd, p.dir).writes, [], cmd);

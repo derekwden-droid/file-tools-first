@@ -25,15 +25,15 @@ function under(p, root) {
 }
 
 // Resolves a path as written in a command. Returns { text, abs } where abs is null when the
-// path depends on a variable or command substitution that can't be worked out here.
-export function resolvePath(text, cwd, shell = 'bash') {
+// path depends on a variable or command substitution that can't be worked out here. A path
+// that starts with a temporary-folder variable resolves into the temporary folder; no variable
+// is ever looked up.
+export function resolvePath(text, cwd) {
   let p = String(text);
   if (TEMP_VAR.test(p)) {
     p = p.replace(TEMP_VAR, '').replace(/^\}?%?/, '');
     return { text, abs: path.join(os.tmpdir(), p.replace(/^[\\/]+/, '')) };
   }
-  p = p.replace(/^(\$\{?HOME\}?|\$env:USERPROFILE|\$HOME|%USERPROFILE%)(?=$|[\\/])/i, os.homedir());
-  if (shell === 'pwsh') p = p.replace(/^\$PWD(?=$|[\\/])/i, cwd || '.');
   if (p === '~' || p.startsWith('~/') || p.startsWith('~\\')) p = path.join(os.homedir(), p.slice(1));
   if (/[$`%]/.test(p)) return { text, abs: null };
   if (WINDOWS) {

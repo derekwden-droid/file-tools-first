@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { commandOf, parseBash } from '../scripts/lib/bash.mjs';
+import { commandOf, literalText, parseBash } from '../scripts/lib/bash.mjs';
 
 const names = (src) => parseBash(src).pipelines.map((p) => p.map((c) => commandOf(c).name));
 
@@ -12,7 +12,7 @@ test('splits lists and pipelines', () => {
 test('reads quotes, escapes and expansions as single words', () => {
   const [[cmd]] = parseBash("sed -i 's/a b/c d/' \"my file.txt\" $'x\\ty' plain\\ space").pipelines;
   assert.deepEqual(cmd.words.map((w) => w.value), ['sed', '-i', 's/a b/c d/', 'my file.txt', 'x\\ty', 'plain space']);
-  const [[echo]] = parseBash('echo "$(date +%s) and ${HOME}" `id` $USER').pipelines;
+  const [[echo]] = parseBash('echo "$(date +%s) and ${name}" `id` $count').pipelines;
   assert.equal(echo.words.length, 4);
   assert.ok(echo.words.slice(1).every((w) => w.dynamic));
 });
@@ -50,4 +50,12 @@ test('keeps comments apart and tolerates unbalanced input', () => {
   assert.equal(pipelines.length, 2);
   assert.doesNotThrow(() => parseBash('$(( 1 + ( 2 )'));
   assert.doesNotThrow(() => parseBash("cat <<EOF\nno end"));
+});
+
+test('takes variables and substitutions out of a word', () => {
+  assert.equal(literalText('PORT=$port'), 'PORT=');
+  assert.equal(literalText('$(date +%s)-${name}-`id`'), '--');
+  assert.equal(literalText('cost: $5 and $@'), 'cost:  and ');
+  assert.equal(literalText('plain text'), 'plain text');
+  assert.equal(literalText('ends with $'), 'ends with $');
 });

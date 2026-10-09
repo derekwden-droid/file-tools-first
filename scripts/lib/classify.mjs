@@ -3,7 +3,7 @@
 // perl -i), text written into a file (echo or a here-document redirected into it, tee), and
 // inline scripts that rewrite an existing file. Everything else is left alone.
 
-import { commandOf, parseBash } from './bash.mjs';
+import { commandOf, literalText, parseBash } from './bash.mjs';
 import { isExempt, isFile, resolvePath } from './paths.mjs';
 
 const NEUTRAL = new Set(['cd', 'pushd', 'popd', 'true', ':', 'echo', 'printf', 'pwd']);
@@ -14,8 +14,7 @@ const SCRIPT_LANGS = { python: 'python', python3: 'python', py: 'python', node: 
 // A word with literal text in it, as opposed to only variables or command substitutions.
 function hasLiteral(word) {
   if (!word.dynamic) return word.value.trim() !== '';
-  const stripped = word.value.replace(/\$\([^)]*\)|\$\{[^}]*\}|\$[A-Za-z_0-9@*#?$!-]+|`[^`]*`/g, '');
-  return /[A-Za-z0-9]/.test(stripped);
+  return /[A-Za-z0-9]/.test(literalText(word.value));
 }
 
 // The file a redirect writes to, or null when it writes to a descriptor.

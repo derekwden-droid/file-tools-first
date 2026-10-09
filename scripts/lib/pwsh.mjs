@@ -2,6 +2,7 @@
 // text (Set-Content, Add-Content, Out-File, Tee-Object, New-Item -Value, a redirect, or a
 // .NET File write) or that rewrite a file from its own contents.
 
+import { literalText } from './bash.mjs';
 import { isExempt, isFile, resolvePath } from './paths.mjs';
 
 // Splits a command into statements, each a list of pipeline stages, each a list of tokens.
@@ -194,7 +195,7 @@ function tokenText(t) {
 
 function item(kind, token, cwd, extra = {}) {
   const text = tokenText(token);
-  const { abs } = text === null ? { abs: null } : resolvePath(text, cwd, 'pwsh');
+  const { abs } = text === null ? { abs: null } : resolvePath(text, cwd);
   return { kind, text: text === null ? 'a computed path' : text, abs, dynamic: abs === null, ...extra };
 }
 
@@ -206,7 +207,7 @@ function withoutRedirects(stage) {
 // True when a stage only produces literal text: a string, or Write-Output of strings.
 function literalStage(stage) {
   const tokens = withoutRedirects(stage);
-  if (tokens.length === 1 && tokens[0].type === 'string') return tokens[0].literal || /[A-Za-z0-9]/.test(tokens[0].value.replace(/\$\w+|\$\([^)]*\)/g, ''));
+  if (tokens.length === 1 && tokens[0].type === 'string') return tokens[0].literal || /[A-Za-z0-9]/.test(literalText(tokens[0].value));
   if (cmdlet(tokens) === 'write-output') return tokens.slice(1).some((t) => t.type === 'string' || (t.type === 'word' && !t.value.startsWith('$')));
   return false;
 }
@@ -243,7 +244,7 @@ function contentReads(command) {
 function readsBack(texts, abs, here) {
   if (!abs) return false;
   return texts.some((t) => {
-    const r = resolvePath(t, here, 'pwsh');
+    const r = resolvePath(t, here);
     return r.abs && r.abs.toLowerCase() === abs.toLowerCase();
   });
 }
@@ -260,7 +261,7 @@ export function classifyPwsh(command, cwd) {
   let here = cwd;
 
   for (const m of String(command).matchAll(DOTNET_WRITE)) {
-    const { abs } = resolvePath(m[2], here, 'pwsh');
+    const { abs } = resolvePath(m[2], here);
     writes.push({ kind: 'literal', text: m[2], abs, dynamic: abs === null, tool: '[IO.File]' });
   }
   if (writes.length) onlyReads = false;
@@ -276,7 +277,7 @@ export function classifyPwsh(command, cwd) {
       });
 
       if (name === 'set-location' && positional.length === 1) {
-        const { abs } = resolvePath(tokenText(positional[0]) || '', here, 'pwsh');
+        const { abs } = resolvePath(tokenText(positional[0]) || '', here);
         if (abs) here = abs;
       }
 

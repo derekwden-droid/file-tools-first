@@ -285,6 +285,38 @@ export function parseBash(s) {
   return { pipelines, comments };
 }
 
+// The text of a word with its variables, substitutions and backtick groups taken out, so
+// "PORT=$PORT" leaves "PORT=" and "$(date)" leaves nothing. Works for bash and PowerShell.
+export function literalText(s) {
+  let out = '';
+  let i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (c === '`') {
+      const end = s.indexOf('`', i + 1);
+      i = end < 0 ? s.length : end + 1;
+      continue;
+    }
+    if (c !== '$') {
+      out += c;
+      i++;
+      continue;
+    }
+    const next = s[i + 1] || '';
+    if (next === '(') i = skipGroup(s, i + 2, '(', ')');
+    else if (next === '{') i = skipGroup(s, i + 2, '{', '}');
+    else if (/[A-Za-z0-9_]/.test(next)) {
+      i += 1;
+      while (i < s.length && /[A-Za-z0-9_:]/.test(s[i])) i++;
+    } else if ('@*#?!-'.includes(next) && next !== '') i += 2;
+    else {
+      out += c;
+      i++;
+    }
+  }
+  return out;
+}
+
 // Leading words that don't name the command: shell keywords, variable assignments and
 // wrappers such as sudo or env.
 const KEYWORDS = new Set(['if', 'then', 'elif', 'else', 'do', 'while', 'until', '!', '{', '}', 'time', 'fi', 'done', 'esac']);
