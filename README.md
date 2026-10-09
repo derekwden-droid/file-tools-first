@@ -1,4 +1,4 @@
-# tool-router
+# file-tools-first
 
 In auto mode and bypass-permissions mode, Claude Code tells Claude to read files with `cat`, `head` or `sed -n` and to change them with `sed`, heredocs or short scripts instead of its Read, Edit and Write tools. No setting turns that off, and Claude reaches for the shell out of habit in other modes too. File work done through the shell loses what the file tools give you:
 
@@ -8,7 +8,7 @@ In auto mode and bypass-permissions mode, Claude Code tells Claude to read files
 
 These are open issues on Anthropic's tracker: anthropics/claude-code 87971, 90450, 87575, 88041 and 19649.
 
-tool-router sends that work back to the file tools:
+file-tools-first sends that work back to the file tools:
 
 - **At session start** it tells Claude to use Read, Edit and Write for files, whatever other instructions say.
 - **Before each Bash or PowerShell command** it blocks two kinds of command and tells Claude which file-tool call to make instead:
@@ -19,10 +19,10 @@ tool-router sends that work back to the file tools:
 Here is what Claude saw in a real session after trying `sed -i 's/retries: 5/retries: 7/' config.yml`:
 
 ```
-tool-router blocked this command: it edits C:\Users\123\Projects\tool-router-live\config.yml in place with sed -i. File changes made through the shell can't be undone with /rewind, don't show up as edits, and skip the CLAUDE.md rules and checks that apply to the file tools.
+file-tools-first blocked this command: it edits C:\Users\123\Projects\file-tools-first-live\config.yml in place with sed -i. File changes made through the shell can't be undone with /rewind, don't show up as edits, and skip the CLAUDE.md rules and checks that apply to the file tools.
 Instead:
-- Edit C:\Users\123\Projects\tool-router-live\config.yml
-Keep using the shell for builds, tests, git and other commands. If the user asked for this exact shell command, tell them tool-router blocked it; they can run it themselves by starting their message with !.
+- Edit C:\Users\123\Projects\file-tools-first-live\config.yml
+Keep using the shell for builds, tests, git and other commands. If the user asked for this exact shell command, tell them file-tools-first blocked it; they can run it themselves by starting their message with !.
 ```
 
 Claude made the change with Edit on its next step. A `head -n 2 config.yml` in the same session came back with `Read file_path "...config.yml" with limit 2`, and a PowerShell `(Get-Content config.yml) -replace ... | Set-Content config.yml` was sent to Edit the same way.
@@ -33,26 +33,23 @@ Claude made the change with Edit on its next step. A `head -n 2 config.yml` in t
 2. "Show me the first 10 lines of `README.md` using `head`."
 3. "Use a Bash heredoc to create `notes.txt` with three lines of text."
 
-Each time tool-router blocks the shell command, and Claude uses Edit, Read or Write instead.
+Each time file-tools-first blocks the shell command, and Claude uses Edit, Read or Write instead.
 
 ## Settings
 
-Set these in the `env` block of your Claude Code `settings.json`:
+One option, **Block read-only shell commands** (`block_reads`), is on by default. Turn it off in `/config` to let read-only commands through while edits and writes stay blocked. To pause the plugin entirely, disable it with `/plugin`.
 
-- `TOOL_ROUTER_READS=allow` lets read-only commands through and keeps blocking writes.
-- `TOOL_ROUTER=off` turns tool-router off without uninstalling it.
-
-Commands you run yourself by starting a message with `!` don't go through Claude's tools, so tool-router never blocks them.
+Commands you run yourself by starting a message with `!` don't go through Claude's tools, so file-tools-first never blocks them.
 
 ## What's included
 
-- **Two hooks.** SessionStart adds a short note telling Claude to use the file tools. PreToolUse on Bash and PowerShell runs `node scripts/tool-router.mjs` before each command and says nothing unless the command is one of the reads or writes above.
+- **Two hooks.** SessionStart adds a short note telling Claude to use the file tools. PreToolUse on Bash and PowerShell runs `node scripts/file-tools-first.mjs` before each command and says nothing unless the command is one of the reads or writes above.
 
 ## What it reads, runs and sends
 
 - **Reads** the command Claude is about to run. To tell an edit from new output, it checks whether the files the command names exist, and it reads no file contents.
 - **Writes** nothing, and keeps no logs or state.
-- **Runs** `node scripts/tool-router.mjs` at session start and before each Bash or PowerShell command, about 35 ms on top of starting Node.
+- **Runs** `node scripts/file-tools-first.mjs` at session start and before each Bash or PowerShell command, about 35 ms on top of starting Node.
 - **Sends** nothing over the network. There is no telemetry and no account. See [PRIVACY.md](PRIVACY.md).
 
 Its messages go into your conversation with Claude, like any other hook output.

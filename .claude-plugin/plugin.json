@@ -1,17 +1,25 @@
 {
-  "name": "tool-router",
-  "displayName": "Tool Router",
+  "name": "file-tools-first",
+  "displayName": "File Tools First",
   "version": "1.0.0",
   "description": "Keeps Claude Code's file work in its file tools. Blocks Bash and PowerShell commands that edit files in place (sed -i), write text into them (heredocs, echo redirects, Set-Content) or only read them (cat, head, sed -n), and names the Read, Edit or Write call to use instead, so /rewind, CLAUDE.md path rules and edit checks keep working in auto and bypass mode.",
   "author": {
     "name": "Derek Denmark",
     "url": "https://github.com/derekwden-droid"
   },
-  "homepage": "https://github.com/derekwden-droid/tool-router",
-  "repository": "https://github.com/derekwden-droid/tool-router",
+  "homepage": "https://github.com/derekwden-droid/file-tools-first",
+  "repository": "https://github.com/derekwden-droid/file-tools-first",
   "license": "MIT",
   "keywords": ["bash", "sed", "heredoc", "auto-mode", "rewind", "read", "edit", "hooks"],
-  "documentationUrl": "https://github.com/derekwden-droid/tool-router/blob/main/README.md",
-  "supportUrl": "https://github.com/derekwden-droid/tool-router/issues",
-  "privacyPolicyUrl": "https://github.com/derekwden-droid/tool-router/blob/main/PRIVACY.md"
+  "documentationUrl": "https://github.com/derekwden-droid/file-tools-first/blob/main/README.md",
+  "supportUrl": "https://github.com/derekwden-droid/file-tools-first/issues",
+  "privacyPolicyUrl": "https://github.com/derekwden-droid/file-tools-first/blob/main/PRIVACY.md",
+  "userConfig": {
+    "block_reads": {
+      "type": "boolean",
+      "title": "Block read-only shell commands",
+      "description": "Also block commands that only read files (cat, head, sed -n, Get-Content) and point Claude to the Read tool. Turn this off to block only shell edits and writes.",
+      "default": true
+    }
+  }
 }

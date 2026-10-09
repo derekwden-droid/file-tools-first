@@ -1,5 +1,5 @@
 // A throwaway project folder for the tests. It sits inside the repository, not the system's
-// temporary folder, because tool-router deliberately ignores writes to temporary folders.
+// temporary folder, because file-tools-first deliberately ignores writes to temporary folders.
 
 import fs from 'node:fs';
 import path from 'node:path';

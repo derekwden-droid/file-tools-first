@@ -15,7 +15,7 @@ function fold(p) {
 }
 
 function tempRoots() {
-  const roots = [os.tmpdir(), process.env.TMPDIR, process.env.TMP, process.env.TEMP, '/tmp', '/var/tmp', '/private/tmp', '/private/var/folders'];
+  const roots = [os.tmpdir(), '/tmp', '/var/tmp', '/private/tmp', '/private/var/folders'];
   return [...new Set(roots.filter(Boolean).map((r) => fold(path.resolve(r))))];
 }
 

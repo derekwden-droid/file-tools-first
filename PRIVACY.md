@@ -1,8 +1,8 @@
-# tool-router plugin privacy policy
+# file-tools-first plugin privacy policy
 
 Last updated: October 9, 2026
 
-The tool-router plugin for Claude Code collects no data. It has no servers, no accounts, no
+The file-tools-first plugin for Claude Code collects no data. It has no servers, no accounts, no
 analytics and no telemetry, and it never connects to the network.
 
 ## What the plugin accesses
@@ -29,4 +29,4 @@ None. Nothing outlives the hook call that read it.
 ## Changes and contact
 
 Changes to this policy are made in this file and recorded in the repository's history. Questions
-go to [github.com/derekwden-droid/tool-router/issues](https://github.com/derekwden-droid/tool-router/issues).
+go to [github.com/derekwden-droid/file-tools-first/issues](https://github.com/derekwden-droid/file-tools-first/issues).

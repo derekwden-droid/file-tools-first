@@ -4,7 +4,7 @@
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/tool-router.mjs"], "timeout": 10 }
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/file-tools-first.mjs", "--block-reads=${user_config.block_reads}"], "timeout": 10 }
         ]
       }
     ],
@@ -12,7 +12,7 @@
       {
         "matcher": "Bash|PowerShell",
         "hooks": [
-          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/tool-router.mjs"], "timeout": 10 }
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/file-tools-first.mjs", "--block-reads=${user_config.block_reads}"], "timeout": 10 }
         ]
       }
     ]

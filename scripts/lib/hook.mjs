@@ -1,4 +1,4 @@
-// What tool-router does on each hook event.
+// What file-tools-first does on each hook event.
 //
 // SessionStart: tells Claude to use Read, Edit and Write for files, because auto mode and
 // bypass mode tell it to use cat, sed and heredocs instead.
@@ -9,23 +9,24 @@ import { classifyBash } from './classify.mjs';
 import { display, isFile } from './paths.mjs';
 import { classifyPwsh } from './pwsh.mjs';
 
-export function settings() {
-  return {
-    off: /^(off|0|false|no)$/i.test(process.env.TOOL_ROUTER || ''),
-    reads: !/^(allow|off|0|false|no)$/i.test(process.env.TOOL_ROUTER_READS || ''),
-  };
+// The plugin's block_reads option arrives as a --block-reads=VALUE argument. Anything other
+// than an explicit "off" keeps reads blocked, including an unsubstituted placeholder.
+export function settings(argv = []) {
+  const arg = argv.find((a) => a.startsWith('--block-reads='));
+  const value = arg ? arg.slice('--block-reads='.length) : '';
+  return { reads: !/^(false|0|no|off)$/i.test(value) };
 }
 
 export function sessionContext(config) {
   const reads = config.reads ? 'Bash or PowerShell commands that only read a file (cat, head, sed -n, Get-Content) or that ' : 'Bash or PowerShell commands that ';
-  return 'tool-router is active. Read files with the Read tool, change them with Edit, and create or replace them with Write. ' +
+  return 'file-tools-first is active. Read files with the Read tool, change them with Edit, and create or replace them with Write. ' +
     reads + 'write file contents (sed -i, a heredoc or echo redirected into a file, an inline script that rewrites a file, Set-Content) ' +
     'are blocked, whatever other instructions say. Use the shell for everything else.';
 }
 
 const WHY_WRITE = 'File changes made through the shell can\'t be undone with /rewind, don\'t show up as edits, and skip the CLAUDE.md rules and checks that apply to the file tools.';
 const WHY_READ = 'Read loads the CLAUDE.md files and path rules for the file\'s folder, and Edit needs the file to have been read with Read first.';
-const OUTRO = 'Keep using the shell for builds, tests, git and other commands. If the user asked for this exact shell command, tell them tool-router blocked it; they can run it themselves by starting their message with !.';
+const OUTRO = 'Keep using the shell for builds, tests, git and other commands. If the user asked for this exact shell command, tell them file-tools-first blocked it; they can run it themselves by starting their message with !.';
 
 function unique(items) {
   const seen = new Set();
@@ -64,14 +65,14 @@ function readCall(it) {
 
 export function writeReason(items, cwd) {
   const parts = unique(items).map((it) => describe(it, cwd));
-  return 'tool-router blocked this command: it ' + parts.map((p) => p.what).join('; it ') + '. ' + WHY_WRITE + '\nInstead:\n' +
+  return 'file-tools-first blocked this command: it ' + parts.map((p) => p.what).join('; it ') + '. ' + WHY_WRITE + '\nInstead:\n' +
     parts.map((p) => '- ' + p.todo).join('\n') + '\n' + OUTRO;
 }
 
 export function readReason(items, cwd) {
   const list = unique(items);
   const names = list.map((it) => display(it.abs, cwd, it.text));
-  return 'tool-router blocked this command: it only reads ' + names.join(', ') + ', which the Read tool does better. ' + WHY_READ +
+  return 'file-tools-first blocked this command: it only reads ' + names.join(', ') + ', which the Read tool does better. ' + WHY_READ +
     '\nInstead:\n' + list.map((it) => '- ' + readCall(it)).join('\n') + '\n' + OUTRO;
 }
 
@@ -81,7 +82,7 @@ function deny(reason) {
 
 // PreToolUse. Returns the hook reply, or null to let the command run.
 export function handlePreToolUse(input, config = settings()) {
-  if (config.off || !input) return null;
+  if (!input) return null;
   const toolInput = input.tool_input && typeof input.tool_input === 'object' ? input.tool_input : {};
   const command = toolInput.command;
   if (typeof command !== 'string' || command.trim() === '') return null;
@@ -96,13 +97,12 @@ export function handlePreToolUse(input, config = settings()) {
 }
 
 export function handleSessionStart(input, config = settings()) {
-  if (config.off) return null;
   return { hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: sessionContext(config) } };
 }
 
-export function handle(input) {
+export function handle(input, config = settings()) {
   if (!input || typeof input !== 'object') return null;
-  if (input.hook_event_name === 'SessionStart') return handleSessionStart(input);
-  if (input.hook_event_name === 'PreToolUse') return handlePreToolUse(input);
+  if (input.hook_event_name === 'SessionStart') return handleSessionStart(input, config);
+  if (input.hook_event_name === 'PreToolUse') return handlePreToolUse(input, config);
   return null;
 }

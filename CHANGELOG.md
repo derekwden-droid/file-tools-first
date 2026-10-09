@@ -14,4 +14,4 @@
     call's offset and limit.
 - Leaves builds, tests, git, searches, pipelines, command output sent to files, and writes to
   temporary folders, devices and `.git` alone.
-- `TOOL_ROUTER_READS=allow` and `TOOL_ROUTER=off` settings.
+- A `block_reads` option (on by default) to let read-only commands through.
